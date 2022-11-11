@@ -1,0 +1,154 @@
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PZ map (Top View)</title>
+    <script type="text/javascript" src='openseadragon/openseadragon.js'></script>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      html, body { height: 100%; margin: 0; padding: 0; background-color: white;}
+      .legend { height: 1em; width: 1em; display: inline-block; border-color: #000; background-color:#fff; border-width: 1px; border-style: solid;}
+    </style>
+  </head>
+
+  <body>
+    <div style="display: flex; flex-flow: column; height: 100%;">
+      <div style="flex: 0 1 auto;">
+
+        <div>
+          <div id="foraging_legend"></div>
+        </div>
+      </div>
+      <div style="flex: 1 1 auto;">
+        <div id="contentDiv" allowfullscreen style="height: 100%"> </div>
+      </div>
+    </div> 
+    <script type="text/javascript">
+        var foraginLegendHTML = `
+            <div class="legend" style="background-color:#fff"></div>Road
+            <div class="legend" style="background-color:#00f"></div>Urban Area
+            <div class="legend" style="background-color:#0ff"></div>Trailer Park
+            <div class="legend" style="background-color:#ff0"></div>Vegitation
+            <div class="legend" style="background-color:#0f0"></div>Forest
+            <div class="legend" style="background-color:#080"></div>Deep Forest
+            <div class="legend" style="background-color:#f0f"></div>Farmland
+            <div class="legend" style="background-color:#f00"></div>Farm
+        `;
+
+        var _viewer = OpenSeadragon({
+            element: document.getElementById("contentDiv"),
+            tileSources:  "base_top/layer0.dzi",
+            homeFillsViewer: true,
+            showZoomControl: true,
+            constrainDuringPan: true,
+            visibilityRatio: 1,
+            prefixUrl: "openseadragon/images/",
+            minZoomImageRatio: 0.5,
+            maxZoomPixelRatio: 10
+
+        });
+        var tiles = [0, 0, 0, 0, 0, 0, 0]
+        var foraging = 0
+        var room = 0
+        var grid = 0
+        var zombie = 0
+        var curLayers = 0
+
+        function addLayer(layer) {
+            curLayers++;
+            var _viewer1 = _viewer.addTiledImage({
+                tileSource: "base_top/layer" + curLayers + ".dzi",
+                opacity: 1,
+                success: function (obj) {
+                    tiles[layer] = obj.item;
+                },
+            });
+        }
+        function removeLayer() {
+            if (curLayers == 0) {
+                return;
+            }
+            curLayers--;
+            item = tiles[curLayers];
+            _viewer.world.removeItem(item);
+            tiles[curLayers] = 0;
+        }
+        function setLayer(l) {
+            if (curLayers < l) {
+                for (i = curLayers; i < l; i++) {
+                    addLayer(i);
+                }
+            }
+            if (curLayers > l) {
+                for (i = curLayers; i > l; i--) {
+                    removeLayer();
+                }
+            }
+            if (foraging != 0) {
+                toggleForaging();
+                toggleForaging();
+            }
+            if (zombie != 0) {
+                toggleZombie();
+                toggleZombie();
+            }
+            if (grid != 0) {
+                toggleGrid();
+                toggleGrid();
+            }
+        }
+        function toggleZombie() {
+            if (zombie == 0) {
+                var _viewer1 = _viewer.addTiledImage({
+                    tileSource: "zombie_top/layer0.dzi",
+                    opacity: 1,
+                    x: 0,
+                    y: 0,
+                    success: function (obj) {
+                        zombie = obj.item;
+                    },
+                });
+            } else {
+                _viewer.world.removeItem(zombie);
+                zombie = 0;
+            }
+        }
+        function toggleGrid() {
+            if (grid == 0) {
+                var _viewer1 = _viewer.addTiledImage({
+                    tileSource: "grid_top/layer0.dzi",
+                    opacity: 1,
+                    x: 0,
+                    y: 0,
+                    success: function (obj) {
+                        grid = obj.item;
+                    },
+                });
+            } else {
+                _viewer.world.removeItem(grid);
+                grid = 0;
+            }
+        }
+        function toggleForaging() {
+            if (foraging == 0) {
+                var _viewer1 = _viewer.addTiledImage({
+                    tileSource: "foraging_top/layer0.dzi",
+                    opacity: 1,
+                    x: 0,
+                    y: 0,
+                    success: function (obj) {
+                        foraging = obj.item;
+                    },
+                });
+                document.getElementById("foraging_legend").innerHTML = foraginLegendHTML;
+            } else {
+                _viewer.world.removeItem(foraging);
+                foraging = 0;
+                document.getElementById("foraging_legend").innerHTML = "";
+            }
+        }
+    </script>
+  </body>
+</html>
